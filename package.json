@@ -1,19 +1,25 @@
 {
-  "name": "nodejs_part2",
+  "name": "nodejs_part1",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "main.js",
+  "directories": {
+    "lib": "lib"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/JehyunJung/nodejs_part2.git"
+    "url": "git+https://github.com/JehyunJung/nodejs_part1.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/JehyunJung/nodejs_part2/issues"
+    "url": "https://github.com/JehyunJung/nodejs_part1/issues"
   },
-  "homepage": "https://github.com/JehyunJung/nodejs_part2#readme"
+  "homepage": "https://github.com/JehyunJung/nodejs_part1#readme",
+  "dependencies": {
+    "sanitize-html": "^2.7.0"
+  }
 }
