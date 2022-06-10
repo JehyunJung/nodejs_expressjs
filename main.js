@@ -21,6 +21,9 @@ app.get('*',(req,res,next)=>{
     })
 })
 
+//Static file 이용할 수 있도록 설정
+app.use(express.static('public'));
+
 
 //Application에 대한 포트 구성
 app.listen(3000,()=>{
@@ -32,29 +35,39 @@ app.get("/",(req,res)=>{
     const list=req.list;
     const title="Welcome Hello";
     const description="Hello, Node.js";
-    const html=template.html(title,list,`<h2>${title}</h2>${description}`,`<a href="/create">create</a>`);
+    const html=template.html(title,list,
+        `
+        <h2>${title}</h2>${description}
+        <img src="/images/coffee.jpg" style="width:300px; display:block; margin:10px;"></img>
+        `,
+        `<a href="/create">create</a>`);
     res.send(html)
 })
 
 //page 경로에 대한 라우팅 진행
-app.get("/page/:pageId",(req,res)=>{
+app.get("/page/:pageId",(req,res,next)=>{
     const list=req.list;
     const title=req.params.pageId;
     const fileteredId=path.parse(title).base;
     console.log(path.parse(title));
     fs.readFile(`./data/${fileteredId}`,'utf8',(err,description)=>{
-        const sanitizedTitle=sanitizeHtml(title);
-        const sanitizedDescription=sanitizeHtml(description);
-        const html=template.html(title,list,
-            `<h2>${sanitizedTitle}</h2>${sanitizedDescription}`,
-            `<a href="/create">create</a>
-            <a href="/update/${sanitizedTitle}">update</a>
-                <form action="/process_delete" method="post">
-                    <input type="hidden" name="id" value="${sanitizedTitle}">
-                    <input type="submit" value="delete"></input>
-                </form>
-                `);
-            res.send(html);
+        if(err){
+            next(err);
+        }
+        else{
+            const sanitizedTitle=sanitizeHtml(title);
+            const sanitizedDescription=sanitizeHtml(description);
+            const html=template.html(title,list,
+                `<h2>${sanitizedTitle}</h2>${sanitizedDescription}`,
+                `<a href="/create">create</a>
+                <a href="/update/${sanitizedTitle}">update</a>
+                    <form action="/process_delete" method="post">
+                        <input type="hidden" name="id" value="${sanitizedTitle}">
+                        <input type="submit" value="delete"></input>
+                    </form>
+                    `);
+                res.send(html);
+        }
         }
     );
 })
@@ -96,7 +109,11 @@ app.get("/update/:pageId",(req,res)=>{
     const title=req.params.pageId;
     const fileteredId=path.parse(title).base;
     fs.readFile(`./data/${fileteredId}`,'utf8',(err,description)=>{
-        const html=template.html(title,list,
+        if(err){
+            next(err);
+        }
+        else{
+            const html=template.html(title,list,
             `
             <form action="/process_update" method="post">
                 <input type="hidden" name="id" value="${title}">
@@ -114,7 +131,8 @@ app.get("/update/:pageId",(req,res)=>{
             `<a href="/create">create</a><a href="/update/${title}">update</a>`);
             res.send(html);
         }
-    );
+        
+    });
 })
 
 
@@ -132,15 +150,28 @@ app.post("/process_update",(req,res)=>{
     });
 })
 
-//파일 수정에 관한 라우팅
+//파일 제거에 관한 라우팅
 app.post("/process_delete",(req,res)=>{
     const id=req.body.id;
     const fileteredId=path.parse(id).base;
     fs.unlink(`./data/${fileteredId}`,(err)=>{
-        console.log(err)
-        res.redirect(`/`);
+        if(err){
+            next(err);
+        }
+        else{
+            res.redirect(`/`);
+        }
+    })
+});
 
-        }   
-    )}
-);
+//404 에러에 대한 처리
+app.use(function(req,res,next){
+    res.status(404).send("Sorry Can't find page");
+});
+
+//error handling
+app.use((err,req,res,next)=>{
+    console.log(err.stack)
+    res.status(500).send("Something Broke!");
+});
 
