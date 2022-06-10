@@ -6,9 +6,13 @@ const bodyParser=require('body-parser');
 const compression = require('compression');
 const pageRouter=require('./routes/page');
 const rootRouter=require('./routes/index');
+const helmet=require('helmet');
 
 //Application 생성
 const app=express();
+
+//helmet 사용 --> security
+app.use(helmet());
 
 //Static file 이용할 수 있도록 설정
 app.use(express.static('public'));
