@@ -7,6 +7,7 @@ const compression = require('compression');
 const pageRouter=require('./routes/page');
 const rootRouter=require('./routes/index');
 const helmet=require('helmet');
+const mysql_connection=require('./lib/mysql.js');
 
 //Application 생성
 const app=express();
@@ -19,11 +20,16 @@ app.use(express.static('public'));
 
 //Middleware 구성
 app.use(bodyParser.urlencoded({extended:false}));
+
 app.use(compression());
 //file을 읽어들여서 list형태로 만들어오는 부분을 middleware로 만들고 이를 적용
 app.get('*',(req,res,next)=>{
-    fs.readdir("./data",(err,files)=>{
-        req.list=template.list(files);
+    mysql_connection.query("SELECT * FROM TOPIC ORDER BY ID;",(err,topics)=>{
+        if(err){
+            throw err;
+        }
+        console.log(topics);
+        req.list=template.list(topics);
         next();
     })
 })
@@ -38,7 +44,6 @@ app.use('/page',pageRouter);
 app.listen(3000,()=>{
     console.log("App Listening on port 3000");
 })
-
 
 
 //404 에러에 대한 처리
