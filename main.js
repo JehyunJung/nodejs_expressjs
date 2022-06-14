@@ -1,11 +1,9 @@
-const fs = require('fs');
 const template=require("./lib/template");
 const express=require('express');
-const qs=require('querystring');
 const bodyParser=require('body-parser');
 const compression = require('compression');
 
-const pageRouter=require('./routes/page');
+const topicRouter=require('./routes/topic');
 const rootRouter=require('./routes/index');
 const authorRouter=require('./routes/author');
 
@@ -51,7 +49,7 @@ app.get('*',(req,res,next)=>{
 app.use("/",rootRouter);
 
 // /page로 시작되는 경로에 대해 pageRouter 미들웨어를 적용하겠다.
-app.use('/page',pageRouter);
+app.use('/topic',topicRouter);
 
 // /author 시작되는 경로에 대해 authorRouter 미들웨어를 적용하겠다.
 app.use('/author',authorRouter);

@@ -1,6 +1,3 @@
-const path=require('path');
-const fs=require('fs');
-const sanitizeHtml=require('sanitize-html');
 const template=require('../lib/template.js');
 
 const express=require('express');

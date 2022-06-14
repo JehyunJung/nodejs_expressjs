@@ -1,4 +1,3 @@
-const path=require('path');
 const sanitizeHtml=require('sanitize-html');
 const template=require('../lib/template.js');
 
@@ -12,10 +11,11 @@ router.get("/create",(req,res)=>{
     const topic_list=req.topic_list;
     const title="WEB - Create";
     const html=template.html(title,topic_list,`
-        <form action="/page/create_process" method="post">
+        <form action="/topic/create_process" method="post">
             <p>
                 <input type="text" name="title" placeholder="title">
             </p>
+                ${template.author_select(req.authors)}
             <p> 
                 <textarea name="description" placeholder="description"></textarea>
             </p>
@@ -30,24 +30,24 @@ router.get("/create",(req,res)=>{
 router.post("/create_process",(req,res)=>{
     const{
         body:{
-            title,description
+            title,author,description
         }
     }=req;
     mysql_connection.query(
         "INSERT INTO TOPIC(title,description,created,author_id) VALUES(?,?,now(),?)"
-        ,[title,description,1]
+        ,[title,description,author]
         ,(err,results)=>{
             if(err){
                 throw err;
             }
-            res.redirect(`/page/${results.insertId}`);
+            res.redirect(`/topic/${results.insertId}`);
         })
 })
 
 //파일 수정에 관한 Routing
-router.get("/update/:pageId",(req,res)=>{
+router.get("/update/:topicId",(req,res)=>{
     const topic_list=req.topic_list;
-    const id=req.params.pageId;
+    const id=req.params.topicId;
     mysql_connection.query(
         "SELECT * FROM TOPIC WHERE ID=?",
         [id],
@@ -60,11 +60,12 @@ router.get("/update/:pageId",(req,res)=>{
             const author_id=topic[0].author_id;
             const html=template.html(title,topic_list,
             `
-            <form action="/page/update_process" method="post">
+            <form action="/topic/update_process" method="post">
                 <input type="hidden" name="id" value="${id}">
             <p>
                 <input type="text" name="title" placeholder="title" value="${title}">
             </p>
+                ${template.author_select(req.authors,author_id)}
             <p>
                 <textarea name="description" placeholder="description">${description}</textarea>
             </p>
@@ -73,7 +74,7 @@ router.get("/update/:pageId",(req,res)=>{
             </p>
             </form>
             `,
-            `<a href="/page/create">create</a><a href="/page/update/${id}">update</a>`);
+            `<a href="/topic/create">create</a><a href="/topic/update/${id}">update</a>`);
             res.send(html);
         })
         
@@ -83,17 +84,17 @@ router.get("/update/:pageId",(req,res)=>{
 router.post("/update_process",(req,res)=>{
     const{
         body:{
-            id,title,description
+            id,title,author,description
         }
     }=req;
     mysql_connection.query(
-        "UPDATE TOPIC SET TITLE=?,DESCRIPTION=? WHERE ID=?"
-        ,[title,description,id],
+        "UPDATE TOPIC SET TITLE=?,DESCRIPTION=?,AUTHOR_ID=? WHERE ID=?"
+        ,[title,description,author,id],
         (err,results)=>{
             if(err){
                 throw err;
             }
-            res.redirect(`/page/${id}`);
+            res.redirect(`/topic/${id}`);
         });
 
 })
@@ -112,12 +113,12 @@ router.post("/delete_process",(req,res)=>{
         }
     )
 });
-//page 경로에 대한 라우팅 진행
-router.get("/:pageId",(req,res,next)=>{
+//topic 경로에 대한 라우팅 진행
+router.get("/:topicId",(req,res,next)=>{
     const topic_list=req.topic_list;
-    const id=req.params.pageId;
+    const id=req.params.topicId;
     mysql_connection.query(
-        "SELECT * FROM TOPIC WHERE ID=?",
+        `SELECT topic.id,title,description,name,profile From topic LEFT JOIN author on topic.author_id=author.id where topic.id=?`,
         [id],
         (err,topic)=>{
             if(err){
@@ -127,15 +128,20 @@ router.get("/:pageId",(req,res,next)=>{
                 console.log(topic);
                 const title=topic[0].title;
                 const description=topic[0].description;
-                const author_id=topic[0].author_id;
-
+                
+                const author_name=topic[0].name;
+                const author_profile=topic[0].profile;
                 const sanitizedTitle=sanitizeHtml(title);
                 const sanitizedDescription=sanitizeHtml(description);
                 const html=template.html(title,topic_list,
-                    `<h2>${sanitizedTitle}</h2>${sanitizedDescription}`,
-                    `<a href="/page/create">create</a>
-                    <a href="/page/update/${id}">update</a>
-                        <form action="/page/delete_process" method="post">
+                    `
+                    <h2>Title: ${sanitizedTitle}</h2>
+                    <h3> Author: ${author_name}</h3>
+                    <h3> Profile: ${author_profile}</h3>
+                    <p> Description: ${sanitizedDescription}</p>`,
+                    `<a href="/topic/create">create</a>
+                    <a href="/topic/update/${id}">update</a>
+                        <form action="/topic/delete_process" method="post">
                             <input type="hidden" name="id" value="${id}">
                             <input type="submit" value="delete"></input>
                         </form>
