@@ -1,5 +1,4 @@
 const path=require('path');
-const fs=require('fs');
 const sanitizeHtml=require('sanitize-html');
 const template=require('../lib/template.js');
 
@@ -10,9 +9,9 @@ const mysql_connection=require('../lib/mysql.js');
 
 //파일 생성하는 Routing
 router.get("/create",(req,res)=>{
-    const list=req.list;
+    const topic_list=req.topic_list;
     const title="WEB - Create";
-    const html=template.html(title,list,`
+    const html=template.html(title,topic_list,`
         <form action="/page/create_process" method="post">
             <p>
                 <input type="text" name="title" placeholder="title">
@@ -47,21 +46,19 @@ router.post("/create_process",(req,res)=>{
 
 //파일 수정에 관한 Routing
 router.get("/update/:pageId",(req,res)=>{
-    const list=req.list;
-    const title=req.params.pageId;
-    const fileteredId=path.parse(title).base;
+    const topic_list=req.topic_list;
+    const id=req.params.pageId;
     mysql_connection.query(
         "SELECT * FROM TOPIC WHERE ID=?",
-        [fileteredId],
+        [id],
         (err,topic)=>{
             if(err){
                 next(err);
             }
-            const id=topic[0].id;
             const title=topic[0].title;
             const description=topic[0].description;
             const author_id=topic[0].author_id;
-            const html=template.html(title,list,
+            const html=template.html(title,topic_list,
             `
             <form action="/page/update_process" method="post">
                 <input type="hidden" name="id" value="${id}">
@@ -117,7 +114,7 @@ router.post("/delete_process",(req,res)=>{
 });
 //page 경로에 대한 라우팅 진행
 router.get("/:pageId",(req,res,next)=>{
-    const list=req.list;
+    const topic_list=req.topic_list;
     const id=req.params.pageId;
     mysql_connection.query(
         "SELECT * FROM TOPIC WHERE ID=?",
@@ -128,14 +125,13 @@ router.get("/:pageId",(req,res,next)=>{
             }
             else{
                 console.log(topic);
-                const id=topic[0].id;
                 const title=topic[0].title;
                 const description=topic[0].description;
                 const author_id=topic[0].author_id;
 
                 const sanitizedTitle=sanitizeHtml(title);
                 const sanitizedDescription=sanitizeHtml(description);
-                const html=template.html(title,list,
+                const html=template.html(title,topic_list,
                     `<h2>${sanitizedTitle}</h2>${sanitizedDescription}`,
                     `<a href="/page/create">create</a>
                     <a href="/page/update/${id}">update</a>

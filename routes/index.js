@@ -4,7 +4,7 @@ const express=require('express');
 const router=express.Router();
 //root 경로에 대한 라우팅 진행
 router.get("/",(req,res)=>{
-    const list=req.list;
+    const list=req.topic_list;
     const title="Welcome Hello";
     const description="Hello, Node.js";
     const html=template.html(title,list,

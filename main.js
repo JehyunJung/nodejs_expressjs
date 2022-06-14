@@ -4,8 +4,11 @@ const express=require('express');
 const qs=require('querystring');
 const bodyParser=require('body-parser');
 const compression = require('compression');
+
 const pageRouter=require('./routes/page');
 const rootRouter=require('./routes/index');
+const authorRouter=require('./routes/author');
+
 const helmet=require('helmet');
 const mysql_connection=require('./lib/mysql.js');
 
@@ -24,13 +27,23 @@ app.use(bodyParser.urlencoded({extended:false}));
 app.use(compression());
 //file을 읽어들여서 list형태로 만들어오는 부분을 middleware로 만들고 이를 적용
 app.get('*',(req,res,next)=>{
-    mysql_connection.query("SELECT * FROM TOPIC ORDER BY ID;",(err,topics)=>{
-        if(err){
+    mysql_connection.query("SELECT * FROM TOPIC ORDER BY ID;",(err1,topics)=>{
+        if(err1){
             throw err;
         }
-        console.log(topics);
-        req.list=template.list(topics);
-        next();
+        mysql_connection.query("SELECT * FROM AUTHOR ORDER BY ID",(err2,authors)=>{
+            if(err2){
+                throw err2;
+            }
+            console.log(topics);
+            console.log(authors);
+
+            req.topic_list=template.topic_list(topics);
+            req.authors=authors;
+            next();
+        })
+        
+        
     })
 })
 
@@ -39,6 +52,9 @@ app.use("/",rootRouter);
 
 // /page로 시작되는 경로에 대해 pageRouter 미들웨어를 적용하겠다.
 app.use('/page',pageRouter);
+
+// /author 시작되는 경로에 대해 authorRouter 미들웨어를 적용하겠다.
+app.use('/author',authorRouter);
 
 //Application에 대한 포트 구성
 app.listen(3000,()=>{
