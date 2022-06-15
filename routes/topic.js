@@ -8,6 +8,10 @@ const mysql_connection=require('../lib/mysql.js');
 
 //파일 생성하는 Routing
 router.get("/create",(req,res)=>{
+    if(!req.session.is_logined){
+        res.redirect("/");
+        return false;
+    }
     const topic_list=req.topic_list;
     const title="WEB - Create";
     const html=template.html(title,topic_list,`
@@ -23,11 +27,17 @@ router.get("/create",(req,res)=>{
                 <input type="submit">
             </p>
         </form>
-    `,``);
+    `,``,
+    template.auth_loginButton(req.session.is_logined,req.session.nickname),
+    template.auth_loginForm(false));
     res.send(html);
 });
 
 router.post("/create_process",(req,res)=>{
+    if(!req.session.is_logined){
+        res.redirect("/");
+        return false;
+    }
     const{
         body:{
             title,author,description
@@ -46,6 +56,10 @@ router.post("/create_process",(req,res)=>{
 
 //파일 수정에 관한 Routing
 router.get("/update/:topicId",(req,res)=>{
+    if(!req.session.is_logined){
+        res.redirect("/");
+        return false;
+    }
     const topic_list=req.topic_list;
     const id=req.params.topicId;
     mysql_connection.query(
@@ -74,7 +88,9 @@ router.get("/update/:topicId",(req,res)=>{
             </p>
             </form>
             `,
-            `<a href="/topic/create">create</a><a href="/topic/update/${id}">update</a>`);
+            `<a href="/topic/create">create</a><a href="/topic/update/${id}">update</a>`,
+            template.auth_loginButton(req.session.is_logined,req.session.nickname),
+            template.auth_loginForm(false));
             res.send(html);
         })
         
@@ -82,6 +98,10 @@ router.get("/update/:topicId",(req,res)=>{
 
 
 router.post("/update_process",(req,res)=>{
+    if(!req.session.is_logined){
+        res.redirect("/");
+        return false;
+    }
     const{
         body:{
             id,title,author,description
@@ -101,6 +121,10 @@ router.post("/update_process",(req,res)=>{
 
 //파일 제거에 관한 라우팅
 router.post("/delete_process",(req,res)=>{
+    if(!req.session.is_logined){
+        res.redirect("/");
+        return false;
+    }
     const id=req.body.id;
     mysql_connection.query(
         "DELETE FROM TOPIC WHERE ID=?"
@@ -145,7 +169,9 @@ router.get("/:topicId",(req,res,next)=>{
                             <input type="hidden" name="id" value="${id}">
                             <input type="submit" value="delete"></input>
                         </form>
-                        `);
+                        `,
+                        template.auth_loginButton(req.session.is_logined,req.session.nickname),
+                        template.auth_loginForm(false));
                     res.send(html);
             }
         })

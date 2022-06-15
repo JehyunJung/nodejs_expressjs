@@ -6,12 +6,26 @@ const compression = require('compression');
 const topicRouter=require('./routes/topic');
 const rootRouter=require('./routes/index');
 const authorRouter=require('./routes/author');
+const authRouter=require('./routes/auth');
 
 const helmet=require('helmet');
 const mysql_connection=require('./lib/mysql.js');
 
+const session=require('express-session');
+const session_secret=require('./config/sessionconfig.json')
+const MySQLStore = require('express-mysql-session')(session);
+const sessionStore=new MySQLStore({},mysql_connection);
+
 //Application 생성
 const app=express();
+
+//Session 정보 할당
+app.use(session({
+    secret:session_secret.secret,
+    resave:false,
+    saveUninitialized:true,
+    store:sessionStore
+}))
 
 //helmet 사용 --> security
 app.use(helmet());
@@ -33,8 +47,8 @@ app.get('*',(req,res,next)=>{
             if(err2){
                 throw err2;
             }
-            console.log(topics);
-            console.log(authors);
+            //console.log(topics);
+            //console.log(authors);
 
             req.topic_list=template.topic_list(topics);
             req.authors=authors;
@@ -53,6 +67,9 @@ app.use('/topic',topicRouter);
 
 // /author 시작되는 경로에 대해 authorRouter 미들웨어를 적용하겠다.
 app.use('/author',authorRouter);
+
+//인증 관련된 routing 수행
+app.use('/auth',authRouter);
 
 //Application에 대한 포트 구성
 app.listen(3000,()=>{

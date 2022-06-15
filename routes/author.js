@@ -13,12 +13,18 @@ router.get("/",(req,res)=>{
         `
         ${template.author_list(req.authors)}
         `,
-        `<a href="/author/create">create</a>`);
+        `<a href="/author/create">create</a>`,
+        template.auth_loginButton(req.session.is_logined,req.session.nickname),
+        template.auth_loginForm(false));
     res.send(html)
 })
 
 //파일 생성하는 Routing
 router.get("/create",(req,res)=>{
+    if(!req.session.is_logined){
+        res.redirect("/author");
+        return false;
+    }
     const topic_list=req.topic_list;
     const title="WEB - Create";
     const html=template.html(title,topic_list,
@@ -34,12 +40,18 @@ router.get("/create",(req,res)=>{
                 <input type="submit" value="create">
         </form>
         `,
-        ``
+        ``,
+        template.auth_loginButton(req.session.is_logined,req.session.nickname),
+        template.auth_loginForm(false)
     );
     res.send(html);
 });
 
 router.post("/create_process",(req,res)=>{
+    if(!req.session.is_logined){
+        res.redirect("/author");
+        return false;
+    }
     const{
         body:{
             name,profile
@@ -58,6 +70,10 @@ router.post("/create_process",(req,res)=>{
 
 //파일 수정에 관한 Routing
 router.get("/update/:authorId",(req,res)=>{
+    if(!req.session.is_logined){
+        res.redirect("/author");
+        return false;
+    }
     const topic_list=req.topic_list;
     const id=req.params.authorId;
     const title = 'Welcome';
@@ -86,7 +102,9 @@ router.get("/update/:authorId",(req,res)=>{
                 </p>
             </form>
             `,
-            ``);
+            ``,
+            template.auth_loginButton(req.session.is_logined,req.session.nickname),
+            template.auth_loginForm(false));
             res.send(html);
         })
         
@@ -94,6 +112,10 @@ router.get("/update/:authorId",(req,res)=>{
 
 
 router.post("/update_process",(req,res)=>{
+    if(!req.session.is_logined){
+        res.redirect("/author");
+        return false;
+    }
     const{
         body:{
             id,author,profile
@@ -113,6 +135,11 @@ router.post("/update_process",(req,res)=>{
 
 //파일 제거에 관한 라우팅
 router.post("/delete_process",(req,res)=>{
+    //console.log("Deleting: " + req.session.is_logined);
+    if(!req.session.is_logined){
+        res.redirect("/author");
+        return false;
+    }
     const id=req.body.id;
     mysql_connection.query(
         "DELETE FROM AUTHOR WHERE ID=?"
