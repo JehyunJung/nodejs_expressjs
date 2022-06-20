@@ -28,7 +28,7 @@ router.get("/create",(req,res)=>{
             </p>
         </form>
     `,``,
-    template.auth_loginButton(req.session.is_logined,req.session.nickname),
+    template.auth_loginButton(req,res),
     template.auth_loginForm(false));
     res.send(html);
 });
@@ -89,7 +89,7 @@ router.get("/update/:topicId",(req,res)=>{
             </form>
             `,
             `<a href="/topic/create">create</a><a href="/topic/update/${id}">update</a>`,
-            template.auth_loginButton(req.session.is_logined,req.session.nickname),
+            template.auth_loginButton(req,res),
             template.auth_loginForm(false));
             res.send(html);
         })
@@ -129,7 +129,7 @@ router.post("/delete_process",(req,res)=>{
     mysql_connection.query(
         "DELETE FROM TOPIC WHERE ID=?"
         ,[id]
-        ,(err,results)=>{
+        ,(err)=>{
             if(err){
                 throw err;
             }
@@ -170,7 +170,7 @@ router.get("/:topicId",(req,res,next)=>{
                             <input type="submit" value="delete"></input>
                         </form>
                         `,
-                        template.auth_loginButton(req.session.is_logined,req.session.nickname),
+                        template.auth_loginButton(req,res),
                         template.auth_loginForm(false));
                     res.send(html);
             }

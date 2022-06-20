@@ -13,7 +13,7 @@ router.get("/",(req,res)=>{
         <img src="/images/coffee.jpg" style="width:300px; display:block; margin:10px;"></img>
         `,
         `<a href="/topic/create">create</a>`,
-        template.auth_loginButton(req.session.is_logined,req.session.nickname),
+        template.auth_loginButton(req,res),
         template.auth_loginForm(false));
     res.send(html)
 })

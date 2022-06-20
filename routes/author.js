@@ -14,7 +14,7 @@ router.get("/",(req,res)=>{
         ${template.author_list(req.authors)}
         `,
         `<a href="/author/create">create</a>`,
-        template.auth_loginButton(req.session.is_logined,req.session.nickname),
+        template.auth_loginButton(req,res),
         template.auth_loginForm(false));
     res.send(html)
 })
@@ -41,7 +41,7 @@ router.get("/create",(req,res)=>{
         </form>
         `,
         ``,
-        template.auth_loginButton(req.session.is_logined,req.session.nickname),
+        template.auth_loginButton(req,res),
         template.auth_loginForm(false)
     );
     res.send(html);
@@ -103,7 +103,7 @@ router.get("/update/:authorId",(req,res)=>{
             </form>
             `,
             ``,
-            template.auth_loginButton(req.session.is_logined,req.session.nickname),
+            template.auth_loginButton(req,res),
             template.auth_loginForm(false));
             res.send(html);
         })

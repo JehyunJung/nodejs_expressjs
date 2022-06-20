@@ -3,11 +3,6 @@ const express=require('express');
 const bodyParser=require('body-parser');
 const compression = require('compression');
 
-const topicRouter=require('./routes/topic');
-const rootRouter=require('./routes/index');
-const authorRouter=require('./routes/author');
-const authRouter=require('./routes/auth');
-
 const helmet=require('helmet');
 const mysql_connection=require('./lib/mysql.js');
 
@@ -15,6 +10,9 @@ const session=require('express-session');
 const session_secret=require('./config/sessionconfig.json')
 const MySQLStore = require('express-mysql-session')(session);
 const sessionStore=new MySQLStore({},mysql_connection);
+
+//Flash
+const flash=require('connect-flash');
 
 //Application 생성
 const app=express();
@@ -26,6 +24,18 @@ app.use(session({
     saveUninitialized:true,
     store:sessionStore
 }))
+
+//flash message 출력
+app.use(flash());
+
+//Passport 설정
+const passport=require('./lib/passport')(app);
+
+//Router middlewares
+const topicRouter=require('./routes/topic');
+const rootRouter=require('./routes/index');
+const authorRouter=require('./routes/author');
+const authRouter=require('./routes/auth')(passport);
 
 //helmet 사용 --> security
 app.use(helmet());

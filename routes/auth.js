@@ -2,53 +2,48 @@ const template=require('../lib/template.js');
 const express=require('express');
 const router=express.Router();
 
-const mysql_connection=require('../lib/mysql');
+module.exports=function(passport){
+    router.get("/login",(req,res)=>{
+        const fmsg=req.flash();
+        console.log(fmsg.error);
+        let feedback="";
 
-const authData={
-    email:'hello',
-    password:'1234',
-    nickname:'hi'
-}
-
-router.get("/login",(req,res)=>{
-    
-    const topic_list=req.topic_list;
-    const title="Welcome - Login";
-    const description="Hello, Node.js";
-    const html=template.html(title,
-        ``,
-        ``,
-        ``,
-        template.auth_loginButton(req.session.is_logined,req.session.nickname),
-        template.auth_loginForm(true));
-    res.send(html)
-})
-
-router.post("/login_process",(req,res)=>{
-    
-    const{
-        body:{
-            email,password
+        if(fmsg.error){
+            feedback=fmsg.error[0];
         }
-    }=req;
+        console.log(feedback);
+        const topic_list=req.topic_list;
+        const title="Welcome - Login";
+        const description="Hello, Node.js";
+        const html=template.html(title,
+            `<h1>${feedback}</h1>`,
+            ``,
+            ``,
+            template.auth_loginButton(req,res),
+            template.auth_loginForm(true));
+        res.send(html)
+    })
 
-    //console.log(email,password);
+    //로그인 시 호출 되는 라우팅 처리
+    router.post('/login_process',
+        passport.authenticate('local',{
+            successRedirect: '/',
+            failureRedirect: '/auth/login',
+            failureFlash:true
+        })
+    );
 
-    if(email===authData.email && password===authData.password){
-        req.session.is_logined=true;
-        req.session.nickname=authData.nickname;
+    router.get("/logout",(req,res)=>{
+        req.logout((err)=>{
+            if(err){
+                throw err;
+            }
+        });
         req.session.save(()=>{
             res.redirect("/");
         });
         
-    }
-})
-
-router.get("/logout",(req,res)=>{
-    req.session.destroy();
-    res.redirect("/");
-    return false;
-})
-
-
-module.exports=router;
+        return false;
+    })
+    return router
+}
