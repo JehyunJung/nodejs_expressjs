@@ -11,6 +11,8 @@ const session_secret=require('./config/sessionconfig.json')
 const MySQLStore = require('express-mysql-session')(session);
 const sessionStore=new MySQLStore({},mysql_connection);
 
+const passport=require('./passport/index')();
+
 //Flash
 const flash=require('connect-flash');
 
@@ -28,14 +30,16 @@ app.use(session({
 //flash message 출력
 app.use(flash());
 
-//Passport 설정
-const passport=require('./lib/passport')(app);
+//passport 설정
+app.use(passport.initialize());
+app.use(passport.session());
+
 
 //Router middlewares
 const topicRouter=require('./routes/topic');
 const rootRouter=require('./routes/index');
 const authorRouter=require('./routes/author');
-const authRouter=require('./routes/auth')(passport);
+const authRouter=require('./routes/auth');
 
 //helmet 사용 --> security
 app.use(helmet());
