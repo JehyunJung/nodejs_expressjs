@@ -34,15 +34,16 @@ router.get("/create",(req,res)=>{
 });
 
 router.post("/create_process",(req,res)=>{
-    if(!req.session.is_logined){
-        res.redirect("/");
-        return false;
-    }
+
     const{
         body:{
             title,author,description
         }
     }=req;
+    if(!req.session.is_logined){
+        res.redirect(`/`);
+        return false;
+    }
     mysql_connection.query(
         "INSERT INTO TOPIC(title,description,created,author_id) VALUES(?,?,now(),?)"
         ,[title,description,author]
@@ -56,12 +57,12 @@ router.post("/create_process",(req,res)=>{
 
 //파일 수정에 관한 Routing
 router.get("/update/:topicId",(req,res)=>{
-    if(!req.session.is_logined){
-        res.redirect("/");
-        return false;
-    }
     const topic_list=req.topic_list;
     const id=req.params.topicId;
+    if(!req.session.is_logined){
+        res.redirect(`/topic/${id}`);
+        return false;
+    }
     mysql_connection.query(
         "SELECT * FROM TOPIC WHERE ID=?",
         [id],
@@ -98,15 +99,17 @@ router.get("/update/:topicId",(req,res)=>{
 
 
 router.post("/update_process",(req,res)=>{
-    if(!req.session.is_logined){
-        res.redirect("/");
-        return false;
-    }
+
     const{
         body:{
             id,title,author,description
         }
     }=req;
+
+    if(!req.session.is_logined){
+        res.redirect(`/topic/${id}`);
+        return false;
+    }
     mysql_connection.query(
         "UPDATE TOPIC SET TITLE=?,DESCRIPTION=?,AUTHOR_ID=? WHERE ID=?"
         ,[title,description,author,id],
@@ -121,11 +124,11 @@ router.post("/update_process",(req,res)=>{
 
 //파일 제거에 관한 라우팅
 router.post("/delete_process",(req,res)=>{
+    const id=req.body.id;
     if(!req.session.is_logined){
-        res.redirect("/");
+        res.redirect(`/topic/${id}`);
         return false;
     }
-    const id=req.body.id;
     mysql_connection.query(
         "DELETE FROM TOPIC WHERE ID=?"
         ,[id]
