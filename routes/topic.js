@@ -29,7 +29,9 @@ router.get("/create",(req,res)=>{
         </form>
     `,``,
     template.auth_loginButton(req,res),
-    template.auth_loginForm(false));
+    template.auth_loginForm(false),        
+    template.auth_joinButton(req,res),
+    template.auth_joinForm(false));
     res.send(html);
 });
 
@@ -91,7 +93,9 @@ router.get("/update/:topicId",(req,res)=>{
             `,
             `<a href="/topic/create">create</a><a href="/topic/update/${id}">update</a>`,
             template.auth_loginButton(req,res),
-            template.auth_loginForm(false));
+            template.auth_loginForm(false),        
+            template.auth_joinButton(req,res),
+            template.auth_joinForm(false));
             res.send(html);
         })
         
@@ -174,7 +178,9 @@ router.get("/:topicId",(req,res,next)=>{
                         </form>
                         `,
                         template.auth_loginButton(req,res),
-                        template.auth_loginForm(false));
+                        template.auth_loginForm(false),        
+                        template.auth_joinButton(req,res),
+                        template.auth_joinForm(false));
                     res.send(html);
             }
         })

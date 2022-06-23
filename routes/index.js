@@ -14,7 +14,9 @@ router.get("/",(req,res)=>{
         `,
         `<a href="/topic/create">create</a>`,
         template.auth_loginButton(req,res),
-        template.auth_loginForm(false));
+        template.auth_loginForm(false),        
+        template.auth_joinButton(req,res),
+        template.auth_joinForm(false));
     res.send(html)
 })
 

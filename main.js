@@ -3,6 +3,13 @@ const express=require('express');
 const bodyParser=require('body-parser');
 const compression = require('compression');
 
+//Router middlewares
+const topicRouter=require('./routes/topic');
+const rootRouter=require('./routes/index');
+const authorRouter=require('./routes/author');
+const authRouter=require('./routes/auth');
+
+
 const helmet=require('helmet');
 const mysql_connection=require('./lib/mysql.js');
 
@@ -35,12 +42,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
-//Router middlewares
-const topicRouter=require('./routes/topic');
-const rootRouter=require('./routes/index');
-const authorRouter=require('./routes/author');
-const authRouter=require('./routes/auth');
-
 //helmet 사용 --> security
 app.use(helmet());
 
@@ -55,18 +56,17 @@ app.use(compression());
 app.get('*',(req,res,next)=>{
     mysql_connection.query("SELECT * FROM TOPIC ORDER BY ID;",(err1,topics)=>{
         if(err1){
-            throw err;
+            throw err1;
         }
         mysql_connection.query("SELECT * FROM AUTHOR ORDER BY ID",(err2,authors)=>{
             if(err2){
                 throw err2;
             }
-            //console.log(topics);
-            //console.log(authors);
-
             req.topic_list=template.topic_list(topics);
             req.authors=authors;
             next();
+
+            
         })
         
         

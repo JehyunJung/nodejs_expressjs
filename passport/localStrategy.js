@@ -9,15 +9,15 @@ module.exports=()=>{
             usernameField:'email',
             passwordField:'password'
         },
-        (username,password,done)=>{
+        (email,password,done)=>{
             mysql_connection.query(
-                "SELECT * FROM USER WHERE USERNAME=?",
-                [username],
+                "SELECT * FROM USER WHERE EMAIL=?",
+                [email],
                 (err,results)=>{
                     if(err){
                         throw err;
                     }
-                    if(username === results[0].username){
+                    if(email === results[0].email){
                         if(password===results[0].password){
                             return done(null,results[0])
                         }else{
@@ -27,7 +27,7 @@ module.exports=()=>{
                         }
                     }else{
                         return done(null,false,{
-                            message:"Incorrect Username"
+                            message:"Incorrect Email"
                         })
                     }
                 });
