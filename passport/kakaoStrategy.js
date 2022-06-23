@@ -15,15 +15,17 @@ module.exports=()=>{
         async (accessToken, refreshToken, profile,done)=>{
             console.log(profile);
             mysql_connection.query(
-                "SELECT * FROM USER WHERE ID=?",
-                [profile.id],
+                "SELECT * FROM USER WHERE SNS_ID=? AND PROVIDER=?",
+                [profile.id,profile.provider],
                 (err,results)=>{
                     if(err){
                         return done(null,false,{
                             message:"Incorrect Profile"
                         })
                     }
-                    return done(null,results[0])
+                    if(results){
+                        return done(null,results[0])
+                    }
                 }
                 );
         }
