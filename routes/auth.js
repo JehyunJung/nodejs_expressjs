@@ -3,6 +3,7 @@ const express=require('express');
 const router=express.Router();
 const passport=require('passport');
 const mysql_connection=require('../lib/mysql');
+const { User } = require('../models/index.js');
 
 router.get("/join",(req,res)=>{
     let flash_message=req.flash("join_error");
@@ -29,35 +30,25 @@ router.post('/join_process',(req,res)=>{
         }
     }=req;
     console.log("CREATED profiles: "+ email + " "+password);
-    mysql_connection.query("SELECT EMAIL FROM USER",(err,emails)=>{
-        let search=false;
-        let duplicated=false;
-        if(err){
-            throw err;
+    User.findOrCreate({
+        where:{
+            email:email,
+            nickname:nickname,
+            password:password}
+    }).then((result)=>{
+        const user=result[0];
+        const isCreated=result[1];
+        if(isCreated){
+            res.redirect("/");
         }
-        emails.forEach(email => {
-            console.log(email)
-            if(username.EMAIL===email){
-                req.flash('join_error','Duplicated Emails');
-                res.redirect("/auth/join");
-                duplicated=true;
-            }
-        })
-        search=true;
-        if(search && !duplicated){
-        mysql_connection.query(
-            "INSERT INTO USER(NICKNAME,EMAIL,PASSWORD) VALUES(?,?,?)",
-            [nickname,email,password],
-            (err,results)=>{
-                if(err){
-                    throw err;
-                }
-                res.redirect("/");
-            })
+        else if(user){
+            req.flash('join_error','Duplicated Emails');
+            res.redirect("/auth/join");
         }
-        
-    })
-
+    }).catch((err)=>{
+        throw err;
+    });
+    
 }
 );
 

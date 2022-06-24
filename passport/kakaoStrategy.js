@@ -1,4 +1,4 @@
-const mysql_connection=require('../lib/mysql.js');
+const {User} = require('../models');
 const passport=require('passport');
 const kakaoStrategy=require('passport-kakao').Strategy;
 const kakaoConfig=require('../config/kakao_config.json')
@@ -14,20 +14,17 @@ module.exports=()=>{
         },
         async (accessToken, refreshToken, profile,done)=>{
             console.log(profile);
-            mysql_connection.query(
-                "SELECT * FROM USER WHERE SNS_ID=? AND PROVIDER=?",
-                [profile.id,profile.provider],
-                (err,results)=>{
-                    if(err){
-                        return done(null,false,{
-                            message:"Incorrect Profile"
-                        })
-                    }
-                    if(results){
-                        return done(null,results[0])
-                    }
-                }
-                );
+            User.findOrCreate({
+                where:{
+                    sns_id:profile.id,
+                    provider:profile.provider,
+                    nickname:profile.username}
+            }).then((result)=>{
+                const user=result[0];
+                return done(null,user)
+            }).catch((err)=>{
+                throw err;
+            });
         }
     ));
 }
